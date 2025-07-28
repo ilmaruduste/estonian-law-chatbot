@@ -14,6 +14,7 @@ def scrape_riigiteataja(url, folder=None):
         str: The content of the page.
     """
     try:
+        os.makedirs(folder, exist_ok=True)
         original_url_response = requests.get(url)
         title = fromstring(original_url_response.content).findtext('.//title')
         logging.info(f"Scraped title: {title}")

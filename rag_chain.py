@@ -4,6 +4,7 @@ import pickle
 import torch
 from transformers import AutoTokenizer, AutoModel
 import requests
+import gradio as gr
 
 # --- Load FAISS index and documents ---
 index = faiss.read_index("data/embeddings/index.faiss")
@@ -35,7 +36,7 @@ Context:
 Question:
 {query}
 
-Answer in detail, but be concise. Also mention what document and specific § number contain(s) the answer the user is looking for, but only if you are absolutely sure:"""
+Answer in detail, but be concise. Also mention what document and specific § number contain(s) the answer the user is looking for, but only if you are absolutely sure. Think twice before you give an answer:"""
     return prompt
 
 def call_ollama_mistral(prompt: str) -> str:
@@ -57,11 +58,18 @@ def rag_answer(query: str) -> str:
     prompt = build_prompt(query, chunks)
     return call_ollama_mistral(prompt)
 
+def gradio_chat(query):
+    if not query.strip():
+        return "Please enter a question."
+    return rag_answer(query)
+
+iface = gr.Interface(
+    fn=gradio_chat,
+    inputs=gr.Textbox(lines=2, placeholder="Ask a legal question..."),
+    outputs=gr.Textbox(label="Answer"),
+    title="Estonian Legal Assistant",
+    description="Ask questions based on Estonian law documents. Powered by FAISS + Mistral + Ollama."
+)
+
 if __name__ == "__main__":
-    while True:
-        user_query = input("\nEnter your legal question (or type 'exit' to quit): ")
-        if user_query.lower() in {"exit", "quit"}:
-            break
-        answer = rag_answer(user_query)
-        print("\n--- Answer ---\n")
-        print(answer)
+    iface.launch(share=True)

@@ -33,12 +33,12 @@ def translate_riigiteataja(test_document = None):
 
         joined_text = "\n".join([page.to_dict()["text"] for page in data])
         logging.info(f"Joined text length: {len(joined_text)} characters")
-        logging.info(f"First 500 characters: {joined_text[:500]}")
+        logging.info(f"First 50 characters: {joined_text[:50]}")
 
         # Translate Estonian to English
         translated_text = translate_et_to_en(joined_text)
         logging.info(f"Translated text length: {len(translated_text)} characters")
-        logging.info(f"First 500 characters of translated text: {translated_text[:500]}")
+        logging.info(f"First 50 characters of translated text: {translated_text[:50]}")
 
         new_filename = filename.replace(".pdf", ".txt")
         with open(os.path.join(translated_docs_dir, f"en_{new_filename}"), "w", encoding="utf-8") as f:

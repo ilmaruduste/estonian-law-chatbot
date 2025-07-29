@@ -5,6 +5,16 @@ import torch
 from transformers import AutoTokenizer, AutoModel
 import requests
 import gradio as gr
+import argparse
+
+# --- Parse command line arguments ---
+parser = argparse.ArgumentParser(description="Run RAG app with specified Ollama model.")
+parser.add_argument("--model", type=str, 
+                    default="mistral", 
+                    help="Ollama model name to use (e.g., mistral or deepseek-r1:14b)",
+                    choices=["mistral", "deepseek-r1:14b"])
+args = parser.parse_args()
+
 
 # --- Load FAISS index and documents ---
 index = faiss.read_index("data/embeddings/index.faiss")
@@ -39,11 +49,11 @@ Question:
 Answer in detail, but be concise. Also mention what document and specific § number contain(s) the answer the user is looking for, but only if you are absolutely sure. Think twice before you give an answer:"""
     return prompt
 
-def call_ollama_mistral(prompt: str) -> str:
+def call_ollama_model(prompt: str, model: str = "mistral") -> str:
     response = requests.post(
         "http://localhost:11434/api/chat",
         json={
-            "model": "mistral",
+            "model": model,
             "messages": [
                 {"role": "user", "content": prompt}
             ],
@@ -56,7 +66,7 @@ def call_ollama_mistral(prompt: str) -> str:
 def rag_answer(query: str) -> str:
     chunks = retrieve_documents(query)
     prompt = build_prompt(query, chunks)
-    return call_ollama_mistral(prompt)
+    return call_ollama_model(prompt, model=args.model)
 
 def gradio_chat(query):
     if not query.strip():
@@ -68,7 +78,7 @@ iface = gr.Interface(
     inputs=gr.Textbox(lines=2, placeholder="Ask a legal question..."),
     outputs=gr.Textbox(label="Answer"),
     title="Estonian Legal Assistant",
-    description="Ask questions based on Estonian law documents. Powered by FAISS + Mistral + Ollama."
+    description="Ask questions based on Estonian law documents. Powered by FAISS + Mistral/Deepseek + Ollama."
 )
 
 if __name__ == "__main__":

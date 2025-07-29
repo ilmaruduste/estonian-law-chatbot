@@ -3,7 +3,7 @@ import sys
 import pymupdf4llm
 import logging
 
-from translation.translate import translate_et_to_en
+from translation.translate import translate
 
 def translate_riigiteataja(test_document = None):
     """
@@ -36,7 +36,7 @@ def translate_riigiteataja(test_document = None):
         logging.info(f"First 50 characters: {joined_text[:50]}")
 
         # Translate Estonian to English
-        translated_text = translate_et_to_en(joined_text)
+        translated_text = translate(joined_text, "et", "en")
         logging.info(f"Translated text length: {len(translated_text)} characters")
         logging.info(f"First 50 characters of translated text: {translated_text[:50]}")
 
